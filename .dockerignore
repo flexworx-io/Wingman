@@ -1,0 +1,12 @@
+node_modules
+client/node_modules
+.git
+.gitignore
+*.md
+.env
+.env.*
+.manus-logs
+dist
+client/dist
+*.test.ts
+*.spec.ts
