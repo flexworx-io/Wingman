@@ -660,10 +660,15 @@ const interestsRouter = router({
   }),
 });
 
+// ─── MAESTRO ROUTERS ────────────────────────────────────────────────────────
+import { interviewRouter, synthesisRouter, memoryRouter, wingmanInteractionRouter } from './routers/maestro';
+import { authFullRouter } from './routers/authFull';
+
 // ─── APP ROUTER ───────────────────────────────────────────────────────────────
 export const appRouter = router({
   system: systemRouter,
   auth: authRouter,
+  authFull: authFullRouter,
   soulForge: soulForgeRouter,
   wingman: wingmanRouter,
   discovery: discoveryRouter,
@@ -673,6 +678,10 @@ export const appRouter = router({
   notifications: notificationsRouter,
   admin: adminRouter,
   interests: interestsRouter,
+  interview: interviewRouter,
+  synthesis: synthesisRouter,
+  memory: memoryRouter,
+  wingmanInteraction: wingmanInteractionRouter,
 });
 
 export type AppRouter = typeof appRouter;

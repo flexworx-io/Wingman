@@ -30,6 +30,15 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  // Multi-tenant
+  orgId: int("orgId"),
+  // Full auth
+  passwordHash: varchar("passwordHash", { length: 255 }),
+  emailVerified: boolean("emailVerified").default(false).notNull(),
+  authProvider: mysqlEnum("authProvider", ["email", "google", "microsoft", "manus"]).default("manus").notNull(),
+  isSuperAdmin: boolean("isSuperAdmin").default(false).notNull(),
+  suspendedAt: timestamp("suspendedAt"),
+  suspendReason: text("suspendReason"),
 });
 
 export type User = typeof users.$inferSelect;
@@ -333,3 +342,199 @@ export const platformStats = mysqlTable("platform_stats", {
   newRegistrations: int("newRegistrations").default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAESTRO PERSONALITY SYNTHESIS ENGINE TABLES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── INTERVIEWS ───────────────────────────────────────────────────────────────
+export const interviews = mysqlTable("interviews", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  mode: mysqlEnum("mode", ["voice", "text", "hybrid"]).default("text").notNull(),
+  status: mysqlEnum("status", ["in_progress", "completed", "abandoned"]).default("in_progress").notNull(),
+  transcript: text("transcript"),
+  audioUri: varchar("audioUri", { length: 500 }),
+  semanticFeaturesJson: json("semanticFeaturesJson").$type<Record<string, unknown>>(),
+  voiceFeaturesJson: json("voiceFeaturesJson").$type<Record<string, unknown>>(),
+  questionCount: int("questionCount").default(0),
+  predictionCount: int("predictionCount").default(0),
+  predictionAccuracy: float("predictionAccuracy").default(0),
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+
+// ─── TRAIT EVIDENCE ───────────────────────────────────────────────────────────
+export const traitEvidence = mysqlTable("trait_evidence", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  interviewId: int("interviewId"),
+  traitCode: varchar("traitCode", { length: 100 }).notNull(),
+  sourceType: mysqlEnum("sourceType", [
+    "interview_transcript",
+    "voice_tone",
+    "rapid_preference",
+    "scenario_response",
+    "direct_preference",
+    "prediction_validation",
+    "contradiction_followup"
+  ]).notNull(),
+  rawScore: float("rawScore").notNull(),
+  normalizedScore: float("normalizedScore").notNull(),
+  weightUsed: float("weightUsed").notNull(),
+  confidence: float("confidence").notNull(),
+  explanation: text("explanation"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// ─── USER TRAIT PROFILES ──────────────────────────────────────────────────────
+export const userTraitProfiles = mysqlTable("user_trait_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  profileVersion: int("profileVersion").default(1).notNull(),
+  traitVectorJson: json("traitVectorJson").$type<Record<string, number>>().notNull(),
+  confidenceVectorJson: json("confidenceVectorJson").$type<Record<string, number>>().notNull(),
+  predictionScore: float("predictionScore").default(0),
+  contradictionVectorJson: json("contradictionVectorJson").$type<Record<string, number>>(),
+  frictionVectorJson: json("frictionVectorJson").$type<Record<string, number>>(),
+  overallConfidence: float("overallConfidence").default(0),
+  certifiedAt: timestamp("certifiedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+// ─── COMPANION NEEDS PROFILES ─────────────────────────────────────────────────
+export const companionNeedsProfiles = mysqlTable("companion_needs_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  needsVectorJson: json("needsVectorJson").$type<Record<string, number>>().notNull(),
+  mode: mysqlEnum("mode", ["best_friend", "social_coordinator", "dating_support", "business_networking", "family_coordinator"]).default("best_friend").notNull(),
+  rationale: json("rationale").$type<Record<string, string>>(),
+  chemistryScore: float("chemistryScore").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// ─── PREDICTION EVENTS ────────────────────────────────────────────────────────
+export const predictionEvents = mysqlTable("prediction_events", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  interviewId: int("interviewId"),
+  questionId: varchar("questionId", { length: 100 }).notNull(),
+  predictedDistributionJson: json("predictedDistributionJson").$type<Record<string, unknown>>().notNull(),
+  actualAnswerJson: json("actualAnswerJson").$type<Record<string, unknown>>(),
+  accuracyScore: float("accuracyScore"),
+  revealCopy: text("revealCopy").notNull(),
+  confirmedFlag: mysqlEnum("confirmedFlag", ["pending", "confirmed", "denied", "softened", "intensified"]).default("pending").notNull(),
+  delightScore: float("delightScore").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// ─── CONTRADICTION EVENTS ─────────────────────────────────────────────────────
+export const contradictionEvents = mysqlTable("contradiction_events", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  interviewId: int("interviewId"),
+  traitCode: varchar("traitCode", { length: 100 }).notNull(),
+  selfValue: float("selfValue"),
+  observedValue: float("observedValue"),
+  predictedValue: float("predictedValue"),
+  contradictionScore: float("contradictionScore").notNull(),
+  insightType: mysqlEnum("insightType", ["aspirational_identity", "self_deception", "hidden_pain", "context_dependent", "blind_spot"]).default("context_dependent").notNull(),
+  resolutionStatus: mysqlEnum("resolutionStatus", ["pending", "resolved", "accepted", "dismissed"]).default("pending").notNull(),
+  resolutionNote: text("resolutionNote"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// ─── SOCIAL MEMORY ENTRIES ────────────────────────────────────────────────────
+export const socialMemoryEntries = mysqlTable("social_memory_entries", {
+  id: int("id").autoincrement().primaryKey(),
+  wingmanId: int("wingmanId").notNull(),
+  memoryType: mysqlEnum("memoryType", ["personality", "social", "relationship", "preference", "planning"]).notNull(),
+  summary: text("summary").notNull(),
+  retrievalEmbeddingRef: varchar("retrievalEmbeddingRef", { length: 500 }),
+  accessScope: mysqlEnum("accessScope", ["private", "wingman_only", "trusted", "public"]).default("wingman_only").notNull(),
+  importance: float("importance").default(0.5),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// ─── WINGMAN INTERACTIONS ─────────────────────────────────────────────────────
+export const wingmanInteractions = mysqlTable("wingman_interactions", {
+  id: int("id").autoincrement().primaryKey(),
+  initiatorWingmanId: int("initiatorWingmanId").notNull(),
+  targetWingmanId: int("targetWingmanId").notNull(),
+  interactionType: mysqlEnum("interactionType", ["introduction", "compatibility_check", "social_plan", "group_coordination", "mood_checkin", "referral"]).notNull(),
+  summary: text("summary"),
+  consentFlags: json("consentFlags").$type<Record<string, boolean>>(),
+  safetyCheckResult: mysqlEnum("safetyCheckResult", ["passed", "flagged", "blocked"]).default("passed").notNull(),
+  chemistryScore: float("chemistryScore"),
+  outcome: mysqlEnum("outcome", ["pending", "accepted", "declined", "completed", "expired"]).default("pending").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MULTI-TENANT + FULL AUTH TABLES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── ORGANIZATIONS (TENANTS) ──────────────────────────────────────────────────
+export const organizations = mysqlTable("organizations", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  name: varchar("name", { length: 200 }).notNull(),
+  plan: mysqlEnum("plan", ["free", "starter", "professional", "enterprise"]).default("free").notNull(),
+  maxUsers: int("maxUsers").default(10).notNull(),
+  config: json("config").$type<Record<string, unknown>>(),
+  ownerId: int("ownerId"),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Organization = typeof organizations.$inferSelect;
+export type InsertOrganization = typeof organizations.$inferInsert;
+
+// ─── EMAIL VERIFICATIONS ──────────────────────────────────────────────────────
+export const emailVerifications = mysqlTable("email_verifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// ─── OAUTH ACCOUNTS ───────────────────────────────────────────────────────────
+export const oauthAccounts = mysqlTable("oauth_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  provider: mysqlEnum("provider", ["google", "microsoft", "manus"]).notNull(),
+  providerAccountId: varchar("providerAccountId", { length: 255 }).notNull(),
+  accessToken: text("accessToken"),
+  refreshToken: text("refreshToken"),
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// ─── PASSWORD RESETS ──────────────────────────────────────────────────────────
+export const passwordResets = mysqlTable("password_resets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// ─── ORG INVITATIONS ──────────────────────────────────────────────────────────
+export const orgInvitations = mysqlTable("org_invitations", {
+  id: int("id").autoincrement().primaryKey(),
+  orgId: int("orgId").notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  invitedBy: int("invitedBy").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  acceptedAt: timestamp("acceptedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OrgInvitation = typeof orgInvitations.$inferSelect;

@@ -17,11 +17,14 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import WingmanTV from "./pages/WingmanTV";
 import DreamBoard from "./pages/DreamBoard";
+import Auth from "./pages/Auth";
+import SuperAdmin from "./pages/SuperAdmin";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/auth" component={Auth} />
       <Route path="/onboarding" component={Onboarding} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/discovery" component={Discovery} />
@@ -34,6 +37,7 @@ function Router() {
       <Route path="/wingman-tv" component={WingmanTV} />
       <Route path="/dream-board" component={DreamBoard} />
       <Route path="/admin" component={Admin} />
+      <Route path="/super-admin" component={SuperAdmin} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

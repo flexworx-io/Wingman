@@ -15,6 +15,13 @@
       "when": 1775732567186,
       "tag": "0001_closed_whiplash",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775759368747,
+      "tag": "0002_mushy_brother_voodoo",
+      "breakpoints": true
     }
   ]
 }

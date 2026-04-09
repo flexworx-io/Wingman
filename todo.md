@@ -123,3 +123,50 @@
 ## Gap Fixes
 - [x] Add Murph.AI health-check tRPC procedure and Admin Dashboard status indicator
 - [x] Add admin seed trigger endpoint + Admin Dashboard "Seed Data" button with feedback UI
+
+## MAESTRO Personality Synthesis Engine (Master Spec Implementation)
+- [ ] DB: Add 8 new tables (interviews, trait_evidence, user_trait_profiles, companion_needs_profiles, prediction_events, contradiction_events, social_memory_entries, wingman_interactions)
+- [ ] DB: Update personality_traits to correct 34-trait taxonomy
+- [ ] Server: personality-engine.ts — 6-layer synthesis engine with exact math formulas
+- [ ] Server: New tRPC endpoints (interview start/answer/predict/confirm/resolve/synthesize)
+- [ ] Server: Murph.AI Calibration Reference integration into Wingman identity generation
+- [ ] Frontend: Rebuild Soul Forge — 4-layer adaptive interview with Prediction Magic Moments
+- [ ] Frontend: Personality DNA Helix animation
+- [ ] Frontend: Compatibility Radar chart (recharts radar)
+- [ ] Frontend: Forge Reveal Cinematic sequence
+- [ ] Frontend: Wingman Origin Card (shareable)
+- [ ] Frontend: Why We Matched card
+- [ ] Frontend: Friend Sync Challenge
+- [ ] Frontend: Future You Mode
+- [ ] Frontend: Confidence Meter delight animation
+- [ ] Tests: Vitest for synthesis engine math
+
+## Full Auth System + Multi-Tenant + Super-Admin
+- [x] DB: organizations table (id, slug, name, plan, config, ownerId, maxUsers, createdAt)
+- [x] DB: email_verifications table (id, userId, token, expiresAt, usedAt)
+- [x] DB: oauth_accounts table (id, userId, provider, providerAccountId, accessToken, refreshToken)
+- [x] DB: Add orgId FK to users, wingman_profiles, connections, virtual_spaces, conference_events, activity_feed, wingman_stories, admin_logs
+- [x] DB: Add passwordHash, emailVerified, authProvider fields to users table
+- [x] Backend: Install bcryptjs, nodemailer, @google-auth-library, @azure/msal-node
+- [x] Backend: Email/password registration endpoint with bcrypt hashing
+- [x] Backend: Email/password login endpoint with JWT session
+- [x] Backend: Email verification token generation + validation endpoint
+- [x] Backend: Google OAuth callback handler (Google Identity Services)
+- [x] Backend: Microsoft OAuth callback handler (MSAL)
+- [x] Backend: Unified auth router with all providers
+- [x] Backend: Tenant-scoped auth middleware (inject orgId into tRPC context)
+- [x] Backend: Tenant provisioning API (create org, assign owner, set plan, configure)
+- [x] Backend: Per-tenant config storage and retrieval
+- [x] Backend: Super-admin tRPC procedures (manage tenants, users, subscriptions, audit logs)
+- [x] Backend: updateUserRole, suspendUser, changeSubscription, getAuditLogs procedures
+- [x] Frontend: /auth page — unified provider selection (Email, Google, Microsoft)
+- [x] Frontend: Email registration form with real-time validation
+- [x] Frontend: Email verification page (/auth/verify)
+- [x] Frontend: Google OAuth redirect handler
+- [x] Frontend: Microsoft OAuth redirect handler
+- [x] Frontend: /super-admin route (super_admin role only)
+- [x] Frontend: Tenant management table (create, edit, suspend, delete orgs)
+- [x] Frontend: User role management panel (promote, demote, suspend)
+- [x] Frontend: Subscription tier management panel
+- [x] Frontend: Audit log viewer with date/action/user filters
+- [x] Frontend: Per-tenant Wingman monitoring panel
