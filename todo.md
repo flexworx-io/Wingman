@@ -170,3 +170,50 @@
 - [x] Frontend: Subscription tier management panel
 - [x] Frontend: Audit log viewer with date/action/user filters
 - [x] Frontend: Per-tenant Wingman monitoring panel
+
+## MAESTRO Interview → Onboarding Integration
+- [x] Rebuild Onboarding.tsx as 4-layer Soul Forge with live trpc.interview.start/answer/predict calls
+- [x] Layer 1: Natural Getting-to-Know-You interview (voice-first text fallback, waveform animation, progress ring)
+- [x] Layer 2: Trait inference display (live trait score bars updating as answers come in)
+- [x] Layer 3: Prediction Magic Moments (cinematic reveal at Q3/Q6/Q9 milestones)
+- [x] Layer 4: Companion Synthesis + Forge Reveal Cinematic
+- [x] Wire trpc.interview.start, answer, predict, confirm, synthesize endpoints into UI
+- [x] Show confidence meter updating in real-time during interview
+
+## Transactional Email via Resend
+- [x] Install @aws-sdk/client-ses (switched to AWS SES)
+- [x] Add SES_ACCESS_KEY_ID, SES_SECRET_ACCESS_KEY, SES_REGION, SES_FROM_EMAIL secrets (AWS SES)
+- [x] Create server/email.ts helper with sendVerificationEmail and sendPasswordResetEmail (AWS SES)
+- [x] Wire email sending into authFull.email.register (verification email)
+- [x] Wire email sending into authFull.email.requestPasswordReset (reset link)
+- [x] Email templates: branded Wingman.vip HTML emails with magic link buttons
+- [x] Tests: vitest for AWS SES credentials (ses.credentials.test.ts — 2 tests passing live)
+
+## Stripe Billing Integration
+- [x] Run webdev_add_feature stripe
+- [x] Create Stripe products/prices for free, starter, professional, enterprise tiers (server/stripe/products.ts)
+- [x] Add stripe_customer_id and stripe_subscription_id to users table
+- [x] Create billing tRPC router (createCheckoutSession, createPortalSession, getSubscription)
+- [x] Add Stripe webhook handler for subscription events (checkout.completed, subscription.updated, subscription.deleted)
+- [x] Wire subscription tier updates from Stripe webhooks into users.subscriptionTier
+- [x] Frontend: Billing page at /billing with plan cards and Stripe Checkout redirect
+- [x] Frontend: Super-Admin subscription management wired to real Stripe data
+- [x] Tests: vitest for billing router
+
+## Guardian Shield™ Safety Stack
+- [x] DB: trust_contacts table (id, userId, name, phone, email, relationshipType, priorityOrder)
+- [x] DB: guardian_risk_events table (id, userId, counterpartUserId, riskType, riskScore, severityBand, evidenceSummaryJson, interventionLevel, status)
+- [x] DB: verified_adult_credentials table (id, userId, ageVerified, identityVerified, livenessVerified, screeningStatus, interactionScope, expiresAt)
+- [x] DB: meetup_sessions table (id, initiatingUserId, targetUserId, agePolicyMode, riskScore, publicLocationRequired, checkinScheduleJson, panicEnabled, trustContactVisibility, status)
+- [x] DB: incidents table (id, userId, incidentType, severity, evidenceVaultUri, caseStatus, assignedTo)
+- [x] DB: Add ageBand, verifiedAdultStatus fields to users table
+- [x] Server: guardian/riskEngine.ts — risk scoring engine (grooming, scam, violence, self-harm, meetup, identity deception)
+- [x] Server: guardianRouter tRPC (getTrustContacts, addTrustContact, getRiskEvents, triggerPanic, startMeetup, checkinMeetup, getVerifiedAdultStatus)
+- [x] Server: safetyOpsRouter tRPC (listIncidents, getIncident, actionIncident, listRiskSignals) — super_admin only
+- [x] Frontend: /guardian page — Guardian Pulse dashboard (trust contacts, risk events, panic button)
+- [x] Frontend: Panic Mode™ UI — one-tap emergency screen with trust contact alerts
+- [x] Frontend: Safe Meet™ flow — meetup start, check-in schedule, panic hooks
+- [x] Frontend: /admin/safety — Trust & Safety Ops Console (incidents, risk signals, policy overrides)
+- [x] Frontend: Age band selector in onboarding (Child/Teen/Adult mode)
+- [x] Frontend: Verified Adult SafeAccess™ flow UI
+- [x] Tests: vitest for risk scoring engine math

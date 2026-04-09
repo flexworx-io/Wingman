@@ -22,6 +22,20 @@
       "when": 1775759368747,
       "tag": "0002_mushy_brother_voodoo",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1775764543428,
+      "tag": "0003_gigantic_leper_queen",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1775764972200,
+      "tag": "0004_glossy_the_twelve",
+      "breakpoints": true
     }
   ]
 }

@@ -39,6 +39,9 @@ export const users = mysqlTable("users", {
   isSuperAdmin: boolean("isSuperAdmin").default(false).notNull(),
   suspendedAt: timestamp("suspendedAt"),
   suspendReason: text("suspendReason"),
+  // Stripe billing
+  stripeCustomerId: varchar("stripeCustomerId", { length: 64 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 64 }),
 });
 
 export type User = typeof users.$inferSelect;
@@ -538,3 +541,139 @@ export const orgInvitations = mysqlTable("org_invitations", {
 });
 
 export type OrgInvitation = typeof orgInvitations.$inferSelect;
+
+// ─── GUARDIAN SHIELD™ TABLES ──────────────────────────────────────────────────
+
+// Trust Contacts — people the user trusts for safety escalation
+export const trustContacts = mysqlTable("trust_contacts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 200 }).notNull(),
+  relationship: varchar("relationship", { length: 100 }).notNull(), // 'parent','sibling','friend','guardian'
+  phone: varchar("phone", { length: 30 }),
+  email: varchar("email", { length: 320 }),
+  priorityOrder: int("priorityOrder").default(1).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TrustContact = typeof trustContacts.$inferSelect;
+export type InsertTrustContact = typeof trustContacts.$inferInsert;
+
+// Guardian Risk Events — logged risk signals with scoring
+export const guardianRiskEvents = mysqlTable("guardian_risk_events", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  counterpartUserId: int("counterpartUserId"),
+  riskType: mysqlEnum("riskType", ["grooming", "scam", "violence", "self_harm", "unsafe_meetup", "identity_deception"]).notNull(),
+  riskScore: float("riskScore").notNull(), // 0.00–1.00
+  severityBand: mysqlEnum("severityBand", ["low", "moderate", "elevated", "high", "critical"]).notNull(),
+  evidenceSummary: json("evidenceSummary").$type<Record<string, unknown>>(),
+  interventionLevel: int("interventionLevel").default(1).notNull(), // 1–4
+  status: mysqlEnum("status", ["open", "acknowledged", "resolved", "escalated", "false_positive"]).default("open").notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  resolvedBy: int("resolvedBy"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GuardianRiskEvent = typeof guardianRiskEvents.$inferSelect;
+export type InsertGuardianRiskEvent = typeof guardianRiskEvents.$inferInsert;
+
+// Verified Adult Credentials — identity/age verification records
+export const verifiedAdultCredentials = mysqlTable("verified_adult_credentials", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  ageVerified: boolean("ageVerified").default(false).notNull(),
+  identityVerified: boolean("identityVerified").default(false).notNull(),
+  livenessVerified: boolean("livenessVerified").default(false).notNull(),
+  screeningStatus: mysqlEnum("screeningStatus", ["none", "pending", "approved", "rejected"]).default("none").notNull(),
+  interactionScope: mysqlEnum("interactionScope", ["none", "adult_only", "minor_allowed"]).default("none").notNull(),
+  verificationMethod: varchar("verificationMethod", { length: 100 }),
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type VerifiedAdultCredential = typeof verifiedAdultCredentials.$inferSelect;
+
+// Meetup Sessions — Safe Meet™ coordination records
+export const meetupSessions = mysqlTable("meetup_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  initiatingUserId: int("initiatingUserId").notNull(),
+  targetUserId: int("targetUserId").notNull(),
+  agePolicyMode: mysqlEnum("agePolicyMode", ["adult_adult", "teen_teen", "adult_minor"]).default("adult_adult").notNull(),
+  riskScore: float("riskScore").default(0),
+  publicLocationRequired: boolean("publicLocationRequired").default(true).notNull(),
+  plannedLocation: varchar("plannedLocation", { length: 500 }),
+  plannedAt: timestamp("plannedAt"),
+  durationEstimateMinutes: int("durationEstimateMinutes").default(60),
+  checkinSchedule: json("checkinSchedule").$type<Array<{ label: string; offsetMinutes: number; completed: boolean }>>(),
+  panicEnabled: boolean("panicEnabled").default(true).notNull(),
+  trustContactVisibility: boolean("trustContactVisibility").default(false).notNull(),
+  status: mysqlEnum("status", ["planned", "active", "completed", "panic_triggered", "canceled"]).default("planned").notNull(),
+  arrivedAt: timestamp("arrivedAt"),
+  completedAt: timestamp("completedAt"),
+  panicTriggeredAt: timestamp("panicTriggeredAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MeetupSession = typeof meetupSessions.$inferSelect;
+export type InsertMeetupSession = typeof meetupSessions.$inferInsert;
+
+// Panic Events — Panic Mode™ activations
+export const panicEvents = mysqlTable("panic_events", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  meetupSessionId: int("meetupSessionId"),
+  triggerType: mysqlEnum("triggerType", ["manual", "missed_checkin", "critical_risk", "explicit_signal"]).notNull(),
+  locationLat: float("locationLat"),
+  locationLng: float("locationLng"),
+  locationAddress: varchar("locationAddress", { length: 500 }),
+  contactsNotified: json("contactsNotified").$type<number[]>(), // trust contact IDs
+  status: mysqlEnum("status", ["active", "resolved", "false_alarm"]).default("active").notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PanicEvent = typeof panicEvents.$inferSelect;
+export type InsertPanicEvent = typeof panicEvents.$inferInsert;
+
+// Incidents — Trust & Safety Ops case management
+export const incidents = mysqlTable("incidents", {
+  id: int("id").autoincrement().primaryKey(),
+  reportedByUserId: int("reportedByUserId"),
+  subjectUserId: int("subjectUserId").notNull(),
+  incidentType: mysqlEnum("incidentType", ["grooming", "scam", "harassment", "impersonation", "csam", "violence_threat", "self_harm", "other"]).notNull(),
+  severity: mysqlEnum("severity", ["low", "medium", "high", "critical"]).default("medium").notNull(),
+  description: text("description"),
+  evidenceVaultUri: varchar("evidenceVaultUri", { length: 500 }),
+  caseStatus: mysqlEnum("caseStatus", ["open", "under_review", "action_taken", "closed", "appealed"]).default("open").notNull(),
+  assignedTo: int("assignedTo"), // admin user ID
+  resolution: text("resolution"),
+  resolvedAt: timestamp("resolvedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Incident = typeof incidents.$inferSelect;
+export type InsertIncident = typeof incidents.$inferInsert;
+
+// Content Safety Scans — media/text scan results
+export const contentSafetyScans = mysqlTable("content_safety_scans", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  contentType: mysqlEnum("contentType", ["text", "image", "video", "audio"]).notNull(),
+  contentRef: varchar("contentRef", { length: 500 }),
+  scanResult: mysqlEnum("scanResult", ["safe", "flagged", "blocked"]).default("safe").notNull(),
+  categories: json("categories").$type<string[]>(), // e.g. ['nudity','violence']
+  confidence: float("confidence").default(0),
+  action: mysqlEnum("action", ["allowed", "warned", "blocked", "escalated"]).default("allowed").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ContentSafetyScan = typeof contentSafetyScans.$inferSelect;

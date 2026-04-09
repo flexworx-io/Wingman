@@ -123,7 +123,7 @@ export default function Auth() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) { toast.error('Passwords do not match'); return; }
-    registerMutation.mutate({ email, password, name });
+    registerMutation.mutate({ email, password, name, origin: window.location.origin });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -133,7 +133,7 @@ export default function Auth() {
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
-    forgotMutation.mutate({ email });
+    forgotMutation.mutate({ email, origin: window.location.origin });
   };
 
   const handleReset = async (e: React.FormEvent) => {

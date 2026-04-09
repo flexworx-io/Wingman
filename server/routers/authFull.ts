@@ -12,6 +12,7 @@ import { TRPCError } from '@trpc/server';
 import { sdk } from '../_core/sdk';
 import { ONE_YEAR_MS } from '../../shared/const';
 import { invokeLLM } from '../_core/llm';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../email';
 
 // ─── Email/Password Auth ───────────────────────────────────────────────────────
 const emailAuthRouter = router({
@@ -21,6 +22,7 @@ const emailAuthRouter = router({
       password: z.string().min(8),
       name: z.string().min(1),
       orgSlug: z.string().optional(),
+      origin: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -61,7 +63,14 @@ const emailAuthRouter = router({
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
       await db.insert(emailVerifications).values({ userId, token, expiresAt });
 
-      // In production, send email here. For now, return token for dev testing.
+      // Send verification email (falls back to console log in dev when RESEND_API_KEY not set)
+      const verificationUrl = `${input.origin ?? 'http://localhost:3000'}/auth?flow=verify&token=${token}`;
+      await sendVerificationEmail({
+        to: input.email,
+        name: input.name,
+        verificationUrl,
+        expiresInHours: 24,
+      });
       return {
         success: true,
         message: 'Registration successful. Please check your email to verify your account.',
@@ -146,7 +155,7 @@ const emailAuthRouter = router({
     }),
 
   requestPasswordReset: publicProcedure
-    .input(z.object({ email: z.string().email() }))
+    .input(z.object({ email: z.string().email(), origin: z.string().optional() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB unavailable' });
@@ -159,6 +168,15 @@ const emailAuthRouter = router({
       const token = nanoid(48);
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
       await db.insert(passwordResets).values({ userId: user.id, token, expiresAt });
+
+      // Send password reset email
+      const resetUrl = `${input.origin ?? 'http://localhost:3000'}/auth?flow=reset&token=${token}`;
+      await sendPasswordResetEmail({
+        to: user.email ?? input.email,
+        name: user.name ?? 'there',
+        resetUrl,
+        expiresInHours: 1,
+      });
 
       return {
         success: true,

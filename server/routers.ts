@@ -663,6 +663,8 @@ const interestsRouter = router({
 // ─── MAESTRO ROUTERS ────────────────────────────────────────────────────────
 import { interviewRouter, synthesisRouter, memoryRouter, wingmanInteractionRouter } from './routers/maestro';
 import { authFullRouter } from './routers/authFull';
+import { billingRouter } from './stripe/router';
+import { guardianRouter } from './guardian/router';
 
 // ─── APP ROUTER ───────────────────────────────────────────────────────────────
 export const appRouter = router({
@@ -682,6 +684,8 @@ export const appRouter = router({
   synthesis: synthesisRouter,
   memory: memoryRouter,
   wingmanInteraction: wingmanInteractionRouter,
+  billing: billingRouter,
+  guardian: guardianRouter,
 });
 
 export type AppRouter = typeof appRouter;

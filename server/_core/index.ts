@@ -10,6 +10,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { initWebSocketServer } from "../websocket";
 import { runSeed } from "../seed";
+import { handleStripeWebhook } from "../stripe/router";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -33,6 +34,15 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  // Stripe webhook MUST be registered BEFORE express.json() to preserve raw body for signature verification
+  app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+    const sig = req.headers["stripe-signature"] as string;
+    if (!sig) { res.status(400).json({ error: "Missing stripe-signature header" }); return; }
+    const result = await handleStripeWebhook(req.body as Buffer, sig);
+    if (!result.received) { res.status(400).json({ error: result.error }); return; }
+    res.json({ received: true });
+  });
+
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
