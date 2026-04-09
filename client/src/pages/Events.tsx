@@ -18,6 +18,23 @@ export default function Events() {
     { enabled: !!selectedConf && isAuthenticated }
   );
 
+  if (isAuthenticated && wingman === null) {
+    return (
+      <AppLayout>
+        <div className="min-h-[80vh] flex items-center justify-center px-4">
+          <div className="glass-card p-10 text-center max-w-md">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mx-auto mb-6" style={{boxShadow:'0 0 40px rgba(245,158,11,0.4)'}}>
+              <Calendar className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="font-display text-2xl font-bold mb-2">Activate Your Wingman First</h2>
+            <p className="text-muted-foreground mb-6">Complete the Soul Forge to unlock Conference Matching and let your Wingman find the right people at every event.</p>
+            <a href="/onboarding"><Button className="btn-aurora w-full">Start Soul Forge <ArrowRight className="w-4 h-4 ml-2" /></Button></a>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="max-w-6xl mx-auto px-4 py-8">

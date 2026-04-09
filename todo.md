@@ -98,6 +98,13 @@
 ## Phase 11: Quality & Delivery
 - [x] TypeScript check (pnpm tsc --noEmit) — 0 errors
 - [x] Vitest tests for all tRPC routers — 31/31 passing
-- [ ] Final UI polish pass
-- [ ] Checkpoint saved
-- [ ] GitHub push to flexworx-io/Wingman
+- [x] Final UI polish pass
+- [x] Checkpoint saved
+- [x] GitHub push to flexworx-io/Wingman
+
+## Bug Fixes
+- [x] Fix getMyWingman returning undefined for new users (must return null)
+- [x] Fix all related procedures that may return undefined instead of null
+- [x] Handle null wingman state gracefully in Dashboard (redirect to onboarding)
+- [x] Fix all other dashboard queries that depend on wingman existing
+- [x] Add null wingman guards to Discovery, DreamBoard, Events, SocialLounge pages

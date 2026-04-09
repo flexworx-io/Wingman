@@ -53,6 +53,23 @@ export default function Discovery() {
     onError: () => toast.error("Could not initiate introduction"),
   });
 
+  if (isAuthenticated && wingman === null) {
+    return (
+      <AppLayout>
+        <div className="min-h-[80vh] flex items-center justify-center px-4">
+          <div className="glass-card p-10 text-center max-w-md">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mx-auto mb-6" style={{boxShadow:'0 0 40px rgba(6,182,212,0.4)'}}>
+              <Compass className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="font-display text-2xl font-bold mb-2">Activate Your Wingman First</h2>
+            <p className="text-muted-foreground mb-6">Complete the Soul Forge to unlock the Discovery Engine and start finding compatible connections.</p>
+            <a href="/onboarding"><Button className="btn-aurora w-full">Start Soul Forge <ArrowRight className="w-4 h-4 ml-2" /></Button></a>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="max-w-7xl mx-auto px-4 py-8">

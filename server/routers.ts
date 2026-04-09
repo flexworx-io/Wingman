@@ -175,7 +175,8 @@ const soulForgeRouter = router({
 // ─── WINGMAN ROUTER ───────────────────────────────────────────────────────────
 const wingmanRouter = router({
   getMyWingman: protectedProcedure.query(async ({ ctx }) => {
-    return getWingmanByUserId(ctx.user.id);
+    const wingman = await getWingmanByUserId(ctx.user.id);
+    return wingman ?? null;
   }),
 
   createWingman: protectedProcedure

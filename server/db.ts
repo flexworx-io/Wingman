@@ -57,18 +57,18 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
 }
 
-export async function getUserByOpenId(openId: string): Promise<User | undefined> {
+export async function getUserByOpenId(openId: string): Promise<User | null> {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-  return result[0];
+  return result[0] ?? null;
 }
 
-export async function getUserById(id: number): Promise<User | undefined> {
+export async function getUserById(id: number): Promise<User | null> {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-  return result[0];
+  return result[0] ?? null;
 }
 
 export async function updateUser(id: number, data: Partial<User>): Promise<void> {
@@ -98,18 +98,18 @@ export async function createWingmanProfile(data: InsertWingmanProfile): Promise<
   return (result[0] as any).insertId;
 }
 
-export async function getWingmanByUserId(userId: number): Promise<WingmanProfile | undefined> {
+export async function getWingmanByUserId(userId: number): Promise<WingmanProfile | null> {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(wingmanProfiles).where(and(eq(wingmanProfiles.userId, userId), ne(wingmanProfiles.status, "archived"))).limit(1);
-  return result[0];
+  return result[0] ?? null;
 }
 
-export async function getWingmanById(id: number): Promise<WingmanProfile | undefined> {
+export async function getWingmanById(id: number): Promise<WingmanProfile | null> {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(wingmanProfiles).where(eq(wingmanProfiles.id, id)).limit(1);
-  return result[0];
+  return result[0] ?? null;
 }
 
 export async function updateWingmanProfile(id: number, data: Partial<WingmanProfile>): Promise<void> {
@@ -142,9 +142,9 @@ export async function savePersonalityTraits(data: InsertPersonalityTraits): Prom
 
 export async function getPersonalityTraits(wingmanId: number) {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(personalityTraits).where(eq(personalityTraits.wingmanId, wingmanId)).limit(1);
-  return result[0];
+  return result[0] ?? null;
 }
 
 export async function updatePersonalityTraits(wingmanId: number, data: Partial<typeof personalityTraits.$inferSelect>) {
@@ -215,10 +215,10 @@ export async function getConnectionCount(wingmanId: number): Promise<number> {
 // ─── TRUST LEVELS ─────────────────────────────────────────────────────────────
 export async function getTrustLevel(wingmanId: number, targetWingmanId: number) {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(trustLevels)
     .where(and(eq(trustLevels.wingmanId, wingmanId), eq(trustLevels.targetWingmanId, targetWingmanId))).limit(1);
-  return result[0];
+  return result[0] ?? null;
 }
 
 export async function upsertTrustLevel(wingmanId: number, targetWingmanId: number, level: string, levelNum: number) {
@@ -252,9 +252,9 @@ export async function getVirtualSpaces(socialMode?: string, category?: string, l
 
 export async function getVirtualSpaceById(id: number) {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(virtualSpaces).where(eq(virtualSpaces.id, id)).limit(1);
-  return result[0];
+  return result[0] ?? null;
 }
 
 export async function joinVirtualSpace(spaceId: number, wingmanId: number) {
@@ -359,9 +359,9 @@ export async function recordTravelEvent(userId: number, wingmanId: number, city:
 
 export async function getActiveTravelEvent(userId: number) {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(travelEvents).where(and(eq(travelEvents.userId, userId), eq(travelEvents.isActive, true))).limit(1);
-  return result[0];
+  return result[0] ?? null;
 }
 
 export async function getFriendsInCity(city: string, excludeUserId: number) {
@@ -388,9 +388,9 @@ export async function registerForConference(conferenceId: number, wingmanId: num
 
 export async function getConferenceRegistration(conferenceId: number, userId: number) {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(conferenceRegistrations).where(and(eq(conferenceRegistrations.conferenceId, conferenceId), eq(conferenceRegistrations.userId, userId))).limit(1);
-  return result[0];
+  return result[0] ?? null;
 }
 
 export async function updateConferenceBriefing(id: number, briefingContent: string) {
@@ -426,9 +426,9 @@ export async function markAllNotificationsRead(userId: number) {
 
 export async function getNotificationPreferences(userId: number) {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).limit(1);
-  return result[0];
+  return result[0] ?? null;
 }
 
 export async function upsertNotificationPreferences(userId: number, prefs: Partial<typeof notificationPreferences.$inferInsert>) {
