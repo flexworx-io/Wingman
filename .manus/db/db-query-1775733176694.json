@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `connections` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`wingmanId` int NOT NULL,\n\t`connectedWingmanId` int NOT NULL,\n\t`compatibilityScore` float DEFAULT 0,\n\t`status` enum('pending','active','paused','blocked') NOT NULL DEFAULT 'pending',\n\t`introducedAt` timestamp NOT NULL DEFAULT (now()),\n\t`humanMeetingAt` timestamp NULL,\n\t`notes` text,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `connections_id` PRIMARY KEY(`id`))",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4RbHj5JBLkn81eG.00db92c4afc6 --database SdATTHWiq38ko5nMwweqJw --execute CREATE TABLE `connections` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`wingmanId` int NOT NULL,\n\t`connectedWingmanId` int NOT NULL,\n\t`compatibilityScore` float DEFAULT 0,\n\t`status` enum('pending','active','paused','blocked') NOT NULL DEFAULT 'pending',\n\t`introducedAt` timestamp NOT NULL DEFAULT (now()),\n\t`humanMeetingAt` timestamp NULL,\n\t`notes` text,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `connections_id` PRIMARY KEY(`id`))",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 417
+}

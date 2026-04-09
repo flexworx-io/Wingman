@@ -5,33 +5,57 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Onboarding from "./pages/Onboarding";
+import Dashboard from "./pages/Dashboard";
+import Discovery from "./pages/Discovery";
+import TrustLadder from "./pages/TrustLadder";
+import SocialLounge from "./pages/SocialLounge";
+import Travel from "./pages/Travel";
+import Events from "./pages/Events";
+import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
+import WingmanTV from "./pages/WingmanTV";
+import DreamBoard from "./pages/DreamBoard";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      <Route path="/" component={Home} />
+      <Route path="/onboarding" component={Onboarding} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/discovery" component={Discovery} />
+      <Route path="/trust" component={TrustLadder} />
+      <Route path="/lounge" component={SocialLounge} />
+      <Route path="/travel" component={Travel} />
+      <Route path="/events" component={Events} />
+      <Route path="/notifications" component={Notifications} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/wingman-tv" component={WingmanTV} />
+      <Route path="/dream-board" component={DreamBoard} />
+      <Route path="/admin" component={Admin} />
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
-          <Toaster />
+          <Toaster
+            theme="dark"
+            toastOptions={{
+              style: {
+                background: "oklch(0.11 0.018 265 / 0.9)",
+                border: "1px solid oklch(0.30 0.025 265 / 0.3)",
+                color: "oklch(0.96 0.008 265)",
+                backdropFilter: "blur(20px)",
+              },
+            }}
+          />
           <Router />
         </TooltipProvider>
       </ThemeProvider>
