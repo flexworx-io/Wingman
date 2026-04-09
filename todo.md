@@ -108,3 +108,18 @@
 - [x] Handle null wingman state gracefully in Dashboard (redirect to onboarding)
 - [x] Fix all other dashboard queries that depend on wingman existing
 - [x] Add null wingman guards to Discovery, DreamBoard, Events, SocialLounge pages
+
+## Next Steps Execution
+- [x] Auto-seed virtual spaces, conferences, personality traits on server startup
+- [x] Add Murph.AI secrets and complete integration layer
+- [x] Audit and fix Soul Forge 7-step onboarding flow end-to-end
+- [x] Add demo wingman profiles for discovery engine
+- [x] Wire seed endpoint accessible from Admin Dashboard
+- [x] Fix Soul Forge: AI avatar generation (step 4), trust level selector (step 6), categorized interests (step 3)
+- [x] Add immersive multi-phase activation ceremony animation
+- [x] Fix all db.ts functions to return null instead of undefined (tRPC compliance)
+- [x] 35/35 vitest tests passing after all fixes
+
+## Gap Fixes
+- [x] Add Murph.AI health-check tRPC procedure and Admin Dashboard status indicator
+- [x] Add admin seed trigger endpoint + Admin Dashboard "Seed Data" button with feedback UI

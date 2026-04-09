@@ -3,7 +3,9 @@
  * Integrates with Murph.AI for AI-to-AI agent orchestration
  */
 
-const MURPH_API_BASE = process.env.MURPH_API_URL || "https://api.murph.ai/v1";
+// Use MURPH_API_URL only if it looks like a URL, otherwise fall back to default
+const _rawMurphUrl = process.env.MURPH_API_URL || "";
+const MURPH_API_BASE = _rawMurphUrl.startsWith("http") ? _rawMurphUrl : "https://api.murph.ai/v1";
 const MURPH_API_KEY = process.env.MURPH_API_KEY || "";
 
 interface MurphHSE {
@@ -61,6 +63,28 @@ async function murphRequest<T>(
   }
 
   return response.json() as Promise<T>;
+}
+
+// ─── HEALTH CHECK ───────────────────────────────────────────────────────────
+export async function checkMurphHealth(): Promise<{ connected: boolean; apiKeyConfigured: boolean; baseUrl: string; message: string }> {
+  const apiKeyConfigured = Boolean(MURPH_API_KEY);
+  const baseUrl = MURPH_API_BASE;
+  if (!apiKeyConfigured) {
+    return { connected: false, apiKeyConfigured: false, baseUrl, message: "MURPH_API_KEY not configured — running in mock mode" };
+  }
+  try {
+    const response = await fetch(`${MURPH_API_BASE}/health`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${MURPH_API_KEY}`, "X-Platform": "wingman-vip" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (response.ok) {
+      return { connected: true, apiKeyConfigured: true, baseUrl, message: "Murph.AI connected and healthy" };
+    }
+    return { connected: false, apiKeyConfigured: true, baseUrl, message: `Murph.AI returned HTTP ${response.status}` };
+  } catch (e: any) {
+    return { connected: false, apiKeyConfigured: true, baseUrl, message: `Connection failed: ${e?.message ?? "unknown error"}` };
+  }
 }
 
 // ─── HSE MANAGEMENT ───────────────────────────────────────────────────────────
@@ -213,4 +237,28 @@ function getMockResponse<T>(method: string, path: string, body?: unknown): T {
   }
 
   return { id, status: "ok" } as T;
+}
+
+// ─── REAL-TIME ACTIVITY STREAM ────────────────────────────────────────────────
+export async function getActivityStream(
+  hseId: string,
+  limit = 10
+): Promise<Array<{ type: string; description: string; timestamp: string; metadata?: Record<string, unknown> }>> {
+  if (!MURPH_API_KEY) {
+    return Array.from({ length: limit }, (_, i) => ({
+      type: ["scan", "match", "introduction", "conversation"][i % 4] as string,
+      description: [
+        "Scanning 2,847 compatible profiles",
+        "Found 94% compatibility match with NOVA",
+        "Initiating introduction with SAGE",
+        "Conversation completed — human introduction requested",
+      ][i % 4] as string,
+      timestamp: new Date(Date.now() - i * 60000).toISOString(),
+      metadata: { hseId, index: i },
+    }));
+  }
+  return murphRequest<Array<{ type: string; description: string; timestamp: string; metadata?: Record<string, unknown> }>>(
+    "GET",
+    `/hse/${hseId}/activity?limit=${limit}`
+  );
 }

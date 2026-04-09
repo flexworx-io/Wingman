@@ -4,15 +4,22 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Activity, Zap, Brain, TrendingUp, Globe, AlertCircle, BarChart3, Eye } from "lucide-react";
+import { Shield, Users, Activity, Zap, Brain, TrendingUp, Globe, AlertCircle, BarChart3, Eye, RefreshCw, Database } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Admin() {
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<"overview"|"users"|"wingmen"|"logs">("overview");
 
-  const { data: stats } = trpc.admin.getStats.useQuery(undefined, { enabled: isAuthenticated && user?.role === "admin" });
-  const { data: recentUsers } = trpc.admin.getRecentUsers.useQuery(undefined, { enabled: isAuthenticated && user?.role === "admin" });
-  const { data: activeWingmen } = trpc.admin.getActiveWingmen.useQuery({ limit: 20 }, { enabled: isAuthenticated && user?.role === "admin" });
+  const isAdmin = isAuthenticated && user?.role === "admin";
+  const { data: stats } = trpc.admin.getStats.useQuery(undefined, { enabled: isAdmin });
+  const { data: recentUsers } = trpc.admin.getRecentUsers.useQuery(undefined, { enabled: isAdmin });
+  const { data: activeWingmen } = trpc.admin.getActiveWingmen.useQuery({ limit: 20 }, { enabled: isAdmin });
+  const { data: murphHealth, refetch: refetchMurph } = trpc.admin.murphHealth.useQuery(undefined, { enabled: isAdmin });
+  const seedData = trpc.admin.seedData.useMutation({
+    onSuccess: () => { toast.success("Platform data seeded successfully!"); },
+    onError: (e) => { toast.error(e.message || "Seed failed"); },
+  });
 
   if (!isAuthenticated || user?.role !== "admin") {
     return (
@@ -85,14 +92,19 @@ export default function Admin() {
 
             <div className="grid lg:grid-cols-2 gap-6">
               <div className="glass-card p-6">
-                <h3 className="font-display font-semibold mb-5 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary" /> Platform Health
-                </h3>
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="font-display font-semibold flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-primary" /> Platform Health
+                  </h3>
+                  <Button size="sm" variant="outline" onClick={() => refetchMurph()} className="h-7 text-xs gap-1">
+                    <RefreshCw className="w-3 h-3" /> Refresh
+                  </Button>
+                </div>
                 <div className="space-y-4">
                   {[
                     { label: "API Response Time", value: "42ms", status: "good" },
                     { label: "WebSocket Connections", value: (stats as any)?.activeWingmen || 0, status: "good" },
-                    { label: "Murph.AI Integration", value: "Connected", status: "good" },
+                    { label: "Murph.AI Integration", value: murphHealth?.connected ? "Connected" : (murphHealth?.apiKeyConfigured ? "Error" : "Mock Mode"), status: murphHealth?.connected ? "good" : "warn" },
                     { label: "Database Status", value: "Healthy", status: "good" },
                     { label: "Match Accuracy", value: "94%", status: "good" },
                   ].map(({ label, value, status }) => (
@@ -107,25 +119,47 @@ export default function Admin() {
                 </div>
               </div>
 
-              <div className="glass-card p-6">
-                <h3 className="font-display font-semibold mb-5 flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-cyan-400" /> Recent Activity
-                </h3>
-                <div className="space-y-3">
-                  {(recentUsers || []).slice(0, 6).map((user: any, i: number) => (
-                    <div key={user.id || i} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-                        {(user.name || "U")[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{user.name || "User"}</p>
-                        <p className="text-[10px] text-muted-foreground">Joined {new Date(user.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      <Badge className={"text-[9px] " + (user.role === "admin" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-muted/20 text-muted-foreground border-border")}>
-                        {user.role}
-                      </Badge>
+              <div className="glass-card p-6 space-y-6">
+                <div>
+                  <h3 className="font-display font-semibold mb-4 flex items-center gap-2">
+                    <Database className="w-4 h-4 text-emerald-400" /> Data Management
+                  </h3>
+                  <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 mb-4">
+                    <p className="text-sm font-medium mb-1">Seed Platform Data</p>
+                    <p className="text-xs text-muted-foreground mb-3">Populate virtual spaces, conferences, demo Wingmen, and personality traits for a rich discovery experience.</p>
+                    <Button size="sm" onClick={() => seedData.mutate()} disabled={seedData.isPending}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white h-8 text-xs gap-2">
+                      {seedData.isPending ? <><RefreshCw className="w-3 h-3 animate-spin" /> Seeding...</> : <><Database className="w-3 h-3" /> Seed Data</>}
+                    </Button>
+                  </div>
+                  {murphHealth && (
+                    <div className={"p-3 rounded-xl border text-xs " + (murphHealth.connected ? "bg-emerald-500/5 border-emerald-500/20" : "bg-amber-500/5 border-amber-500/20")}>
+                      <p className="font-medium mb-0.5">Murph.AI Status</p>
+                      <p className="text-muted-foreground">{murphHealth.message}</p>
+                      <p className="text-muted-foreground mt-0.5">Endpoint: {murphHealth.baseUrl}</p>
                     </div>
-                  ))}
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-display font-semibold mb-4 flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-cyan-400" /> Recent Activity
+                  </h3>
+                  <div className="space-y-3">
+                    {(recentUsers || []).slice(0, 6).map((user: any, i: number) => (
+                      <div key={user.id || i} className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                          {(user.name || "U")[0]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{user.name || "User"}</p>
+                          <p className="text-[10px] text-muted-foreground">Joined {new Date(user.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <Badge className={"text-[9px] " + (user.role === "admin" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-muted/20 text-muted-foreground border-border")}>
+                          {user.role}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

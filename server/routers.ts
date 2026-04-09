@@ -26,8 +26,9 @@ import {
 } from "./db";
 import {
   createHSE, updateHSE, discoverCompatibleHSEs, initiateIntroduction,
-  getConversation, calculateCompatibility,
+  getConversation, calculateCompatibility, checkMurphHealth,
 } from "./murph";
+import { runSeed } from "./seed";
 
 // ─── SOUL FORGE TRAIT DEFINITIONS ─────────────────────────────────────────────
 const TRAIT_KEYS = [
@@ -631,6 +632,16 @@ const adminRouter = router({
       await logAdminAction(ctx.user.id, input.action, input.targetType, input.targetId, input.details as Record<string, unknown> | undefined);
       return { success: true };
     }),
+
+  murphHealth: adminProcedure.query(async () => {
+    return checkMurphHealth();
+  }),
+
+  seedData: adminProcedure.mutation(async ({ ctx }) => {
+    await runSeed();
+    await logAdminAction(ctx.user.id, "seed_data", "platform", undefined, { triggeredAt: new Date().toISOString() });
+    return { success: true, message: "Platform data seeded successfully" };
+  }),
 });
 
 // ─── INTERESTS ROUTER ─────────────────────────────────────────────────────────

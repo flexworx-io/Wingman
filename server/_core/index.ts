@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { initWebSocketServer } from "../websocket";
+import { runSeed } from "../seed";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -46,6 +47,9 @@ async function startServer() {
   );
   // Initialize WebSocket server for real-time activity streaming
   initWebSocketServer(server);
+
+  // Auto-seed platform data (idempotent — safe to run every startup)
+  runSeed().catch(err => console.error("[Seed] Failed:", err));
 
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {

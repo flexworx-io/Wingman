@@ -7,4 +7,6 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  murphApiKey: process.env.MURPH_API_KEY ?? "",
+  murphApiUrl: process.env.MURPH_API_URL ?? "https://api.murph.ai/v1",
 };
