@@ -503,6 +503,28 @@ const superAdminRouter = router({
       return { logs, total: logs.length };
     }),
 
+  // Delete organization (soft delete via isActive=false)
+  deleteOrg: superAdminProcedure
+    .input(z.object({
+      orgId: z.number(),
+      confirm: z.literal(true),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB unavailable' });
+      await db.update(organizations)
+        .set({ isActive: false })
+        .where(eq(organizations.id, input.orgId));
+      await db.insert(adminLogs).values({
+        adminId: ctx.user.id,
+        action: 'delete_org',
+        targetType: 'organization',
+        targetId: input.orgId,
+        details: { deletedAt: new Date().toISOString() },
+      });
+      return { success: true };
+    }),
+
   // Platform-wide analytics
   getPlatformAnalytics: superAdminProcedure.query(async () => {
     const db = await getDb();

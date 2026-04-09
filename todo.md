@@ -125,21 +125,21 @@
 - [x] Add admin seed trigger endpoint + Admin Dashboard "Seed Data" button with feedback UI
 
 ## MAESTRO Personality Synthesis Engine (Master Spec Implementation)
-- [ ] DB: Add 8 new tables (interviews, trait_evidence, user_trait_profiles, companion_needs_profiles, prediction_events, contradiction_events, social_memory_entries, wingman_interactions)
-- [ ] DB: Update personality_traits to correct 34-trait taxonomy
-- [ ] Server: personality-engine.ts — 6-layer synthesis engine with exact math formulas
-- [ ] Server: New tRPC endpoints (interview start/answer/predict/confirm/resolve/synthesize)
-- [ ] Server: Murph.AI Calibration Reference integration into Wingman identity generation
-- [ ] Frontend: Rebuild Soul Forge — 4-layer adaptive interview with Prediction Magic Moments
-- [ ] Frontend: Personality DNA Helix animation
-- [ ] Frontend: Compatibility Radar chart (recharts radar)
-- [ ] Frontend: Forge Reveal Cinematic sequence
-- [ ] Frontend: Wingman Origin Card (shareable)
-- [ ] Frontend: Why We Matched card
-- [ ] Frontend: Friend Sync Challenge
-- [ ] Frontend: Future You Mode
-- [ ] Frontend: Confidence Meter delight animation
-- [ ] Tests: Vitest for synthesis engine math
+- [x] DB: Add 8 new tables (interviews, trait_evidence, user_trait_profiles, companion_needs_profiles, prediction_events, contradiction_events, social_memory_entries, wingman_interactions)
+- [x] DB: Update personality_traits to correct 34-trait taxonomy
+- [x] Server: personality-engine.ts — 6-layer synthesis engine with exact math formulas
+- [x] Server: New tRPC endpoints (interview start/answer/predict/confirm/resolve/synthesize)
+- [x] Server: Murph.AI Calibration Reference integration into Wingman identity generation
+- [x] Frontend: Rebuild Soul Forge — 4-layer adaptive interview with Prediction Magic Moments
+- [x] Frontend: Personality DNA Helix animation
+- [x] Frontend: Compatibility Radar chart (recharts radar)
+- [x] Frontend: Forge Reveal Cinematic sequence
+- [x] Frontend: Wingman Origin Card (shareable)
+- [x] Frontend: Why We Matched card
+- [x] Frontend: Friend Sync Challenge
+- [x] Frontend: Future You Mode
+- [x] Frontend: Confidence Meter delight animation
+- [x] Tests: Vitest for synthesis engine math
 
 ## Full Auth System + Multi-Tenant + Super-Admin
 - [x] DB: organizations table (id, slug, name, plan, config, ownerId, maxUsers, createdAt)

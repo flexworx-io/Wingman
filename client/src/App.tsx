@@ -19,6 +19,7 @@ import WingmanTV from "./pages/WingmanTV";
 import DreamBoard from "./pages/DreamBoard";
 import Auth from "./pages/Auth";
 import SuperAdmin from "./pages/SuperAdmin";
+import MaestroShowcase from "./pages/MaestroShowcase";
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/dream-board" component={DreamBoard} />
       <Route path="/admin" component={Admin} />
       <Route path="/super-admin" component={SuperAdmin} />
+      <Route path="/maestro" component={MaestroShowcase} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

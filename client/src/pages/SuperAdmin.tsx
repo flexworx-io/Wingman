@@ -59,6 +59,10 @@ export default function SuperAdmin() {
     onSuccess: () => { toast.success('Organization updated'); tenantsQuery.refetch(); },
     onError: (e) => toast.error(e.message),
   });
+  const deleteOrgMutation = trpc.authFull.superAdmin.deleteOrg.useMutation({
+    onSuccess: () => { toast.success('Organization deactivated'); tenantsQuery.refetch(); },
+    onError: (e) => toast.error(e.message),
+  });
 
   const updateUserMutation = trpc.authFull.superAdmin.updateUser.useMutation({
     onSuccess: () => { toast.success('User updated'); usersQuery.refetch(); },
@@ -371,6 +375,18 @@ export default function SuperAdmin() {
                       className={`text-xs h-7 px-2 ${tenant.isActive ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20' : 'bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20'}`}
                     >
                       {tenant.isActive ? <><Ban className="w-3 h-3 mr-1" />Suspend</> : 'Reinstate'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (window.confirm(`Permanently deactivate org #${tenant.id}? This cannot be undone.`)) {
+                          deleteOrgMutation.mutate({ orgId: tenant.id, confirm: true });
+                        }
+                      }}
+                      className="text-xs h-7 px-2 bg-red-900/20 border-red-800/40 text-red-500 hover:bg-red-900/40"
+                    >
+                      Delete
                     </Button>
                   </div>
                 </div>
