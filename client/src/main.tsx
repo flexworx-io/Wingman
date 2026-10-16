@@ -6,7 +6,10 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
+import { initGoogleAnalytics } from "./lib/analytics";
 import "./index.css";
+
+initGoogleAnalytics();
 
 const queryClient = new QueryClient();
 
