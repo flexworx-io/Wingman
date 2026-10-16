@@ -1,7 +1,8 @@
-// Google Analytics 4 for wingman.vip. Does nothing until VITE_GA_ID is set at build time.
-// Only an id shaped G-XXXXXXXXXX is accepted. GA4 enhanced measurement (on by default)
-// records the SPA's client-side route changes, so no manual page_view calls are needed.
-const GA_ID: string = import.meta.env.VITE_GA_ID ?? "";
+// Google Analytics 4 for wingman.vip (Wingman property, "Wingman Website" stream).
+// VITE_GA_ID overrides the default at build time; only an id shaped G-XXXXXXXXXX is accepted.
+// GA4 enhanced measurement (on by default) records the SPA's client-side route changes,
+// so no manual page_view calls are needed.
+const GA_ID: string = import.meta.env.VITE_GA_ID || "G-3T82DJ06FB";
 const VALID_GA_ID = /^G-[A-Z0-9]{4,16}$/;
 
 type Gtag = (...args: unknown[]) => void;
