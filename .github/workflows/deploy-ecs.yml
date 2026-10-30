@@ -53,27 +53,28 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # The deploy role cannot iam:PassRole the task role, so it cannot register a new
-      # task definition revision. When the live task definition runs the :latest tag
-      # (pushed above), a forced redeploy pulls the new image with no new revision.
-      - name: Check the live task definition uses the :latest tag
+      - name: Download current task definition
         run: |
-          TD=$(aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services ${{ env.ECS_SERVICE }} \
-            --query 'services[0].taskDefinition' --output text)
-          IMAGE=$(aws ecs describe-task-definition --task-definition "$TD" \
-            --query "taskDefinition.containerDefinitions[?name=='${{ env.CONTAINER_NAME }}'].image | [0]" --output text)
-          echo "Live task definition: $TD"
-          echo "Live image: $IMAGE"
-          case "$IMAGE" in
-            "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest"|"${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}") ;;
-            *) echo "::error::Live task definition pins $IMAGE, not :latest; a forced redeploy would not pick up the new image. Grant iam:PassRole on the task role to the deploy role."; exit 1 ;;
-          esac
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.TASK_DEFINITION_FAMILY }} \
+            --query taskDefinition \
+            --output json > /tmp/task-definition.json
 
-      - name: Force a new deployment and wait for it to stabilise
-        run: |
-          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} \
-            --force-new-deployment --query 'service.deployments[0].id' --output text
-          aws ecs wait services-stable --cluster ${{ env.ECS_CLUSTER }} --services ${{ env.ECS_SERVICE }}
+      - name: Update task definition with new image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: /tmp/task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
 
       - name: Notify on success
         if: success()
