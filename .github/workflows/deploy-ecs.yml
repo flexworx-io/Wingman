@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'webapp/**'
-      - '.github/workflows/deploy-ecs.yml'
   workflow_dispatch:
 
 env:
@@ -47,7 +44,7 @@ jobs:
         id: build-image
         uses: docker/build-push-action@v5
         with:
-          context: ./webapp
+          context: .
           platforms: linux/amd64
           push: true
           tags: |
